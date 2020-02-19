@@ -1,11 +1,11 @@
 # k8s-cli-java project
 
-This project is an example of how to extend kubernetes cli (kubectl) with a Java application. 
-It demonstrates the use of [Fabric8 Kubernetes Client](https://github.com/fabric8io/kubernetes-client) and access the
-Kubernetes API.  In order to be a kubectl plugin it is necessary to have a file which uses the defined naming convention
- of `kube-<plugin-name>`.  This is a challenge in Java.  This project shows the use of [Graal](https://www.graalvm.org/)
- in order to build a native image using the [gradle palantir plugin](https://github.com/palantir/gradle-graal).
- In order to provide a good CLI experience [picocli](https://picocli.info/) is used.
+This project is an example of how to extend kubernetes cli (kubectl) with a Java application.  It demonstrates the use of [Fabric8 Kubernetes Client](https://github.com/fabric8io/kubernetes-client) and access the Kubernetes API.  In order to be a kubectl plugin it is necessary to have a file which uses the defined naming convention of `kube-<plugin-name>`.  This is a challenge in Java.  This project shows the use of [Graal](https://www.graalvm.org/) in order to build a native image using the [gradle palantir plugin](https://github.com/palantir/gradle-graal).
+In order to provide a good CLI experience [picocli](https://picocli.info/) is used.
+
+## Fabric8
+
+This work and demo is provided by [Marc](https://github.com/marcnuri-demo) as a followup to a [demo of the same using client-java](https://github.com/codementor/k8s-cli-java).  His original work is https://github.com/marcnuri-demo/k8s-cli-java.  What a great reminder of how the value the internet can provided! Besides providing a great example of [fabric8](https://github.com/fabric8io/kubernetes-client), it has a number of Java improvements worth showcasing.
 
 
 ## Prerequisites
