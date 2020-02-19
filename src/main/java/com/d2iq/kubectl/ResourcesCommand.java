@@ -1,72 +1,87 @@
 package com.d2iq.kubectl;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import dnl.utils.text.table.TextTable;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.Configuration;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1APIResource;
-import io.kubernetes.client.models.V1APIResourceList;
-import io.kubernetes.client.util.Config;
+import io.fabric8.kubernetes.api.model.Doneable;
+import io.fabric8.kubernetes.api.model.KubernetesList;
+import io.fabric8.kubernetes.client.BaseClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.Resource;
+import io.fabric8.kubernetes.client.dsl.base.BaseOperation;
+import io.fabric8.kubernetes.client.dsl.base.OperationContext;
 import picocli.CommandLine;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @CommandLine.Command(
         name = "resources",
         description = "lists resources in the k8s cluster"
 )
-public class ResourcesCommand implements Runnable {
+public class ResourcesCommand extends KubernetesClientCommand {
 
     @Override
-    public void run() {
+    void runWithClient(KubernetesClient kc) {
 
-        ApiClient client;
-        try {
-            client = Config.defaultClient();
-            Configuration.setDefaultApiClient(client);
-        } catch (IOException e) {
-            System.out.println("Unable to get cluster configuration");
-            System.err.println(e);
-            return;
-        }
-
-        V1APIResourceList list;
-        try {
-            CoreV1Api api = new CoreV1Api(client);
-            list = api.getAPIResources();
-
-        } catch (ApiException e) {
-            System.out.println("unable to get resource list");
-            System.err.println(e);
-            return;
-        }
-
-
-        if (list.getResources().size() < 1) {
+        final APIResourceList resourceList = new APIResourceListOperation((BaseClient)kc).list();
+        if (resourceList.resources.isEmpty()) {
             System.out.println("No resources found");
         } else {
-            printTable(list.getResources());
+            printTable(resourceList.resources);
         }
     }
 
-    private void printTable(List<V1APIResource> resources) {
-        Object[][] data = new Object[resources.size()][];
-        int i = 0;
-        for (V1APIResource item : resources) {
-            ArrayList<Object> cols = new ArrayList<>();
-            cols.add(item.getName());
-            cols.add(item.isNamespaced());
-            cols.add(item.getKind());
-            data[i++] = cols.toArray();
+    private void printTable(List<APIResource> resources) {
+        final Object[][] data = resources.stream()
+            .map(apiResource -> new Object[]{
+                apiResource.name,
+                apiResource.namespaced,
+                apiResource.kind
+            })
+            .toArray(Object[][]::new);
+        final String[] columnNames = {"Resource", "Namespaced", "Kind"};
+        new TextTable(columnNames, data).printTable();
+    }
+
+    /**
+     * Temporary work-around to allow query api-resources
+     * (current fabric8io/kubernetes-client doesn't have this in the model)
+     */
+    public static class APIResourceListOperation
+        extends BaseOperation<APIResource, APIResourceList, Doneable<APIResource>, Resource<APIResource, Doneable<APIResource>>> {
+
+        public APIResourceListOperation(BaseClient kc) {
+            super(new OperationContext()
+                .withConfig(kc.getConfiguration())
+                .withOkhttpClient(kc.getHttpClient())
+                .withPlural(""));
+
+            this.apiVersion = "v1";
+            this.type = APIResource.class;
+            this.listType = APIResourceList.class;
         }
 
-        String[] columnNames = {"Resource", "Namespaced", "Kind"};
+        @Override
+        public boolean isResourceNamespaced() {
+            return false;
+        }
+    }
 
-        TextTable tt = new TextTable(columnNames, data);
-        tt.printTable();
+    public static class APIResourceList extends KubernetesList {
+        @JsonProperty("resources")
+        private List<APIResource> resources;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class APIResource {
+        @JsonProperty("name")
+        private String name;
+        @JsonProperty("singularName")
+        private String singularName;
+        @JsonProperty("namespaced")
+        private Boolean namespaced;
+        @JsonProperty("kind")
+        private String kind;
     }
 }

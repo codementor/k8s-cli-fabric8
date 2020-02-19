@@ -1,0 +1,39 @@
+
+name: k8s-cli-java build and test
+
+on:
+  push:
+
+
+jobs:
+  minikube:
+    name: k8s-cli-java with Minikube Cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup Java 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+      - name: Build Graal native image
+        run: ./gradlew native
+      - name: Setup Minikube-Kubernetes
+        uses: manusa/actions-setup-minikube@v1.0.0
+        with:
+          minikube version: v1.5.1
+          kubernetes version: v1.17.2
+      - name: Run some commands
+        run: |
+          echo './build/graal/kubectl-java -h'
+          ./build/graal/kubectl-java -h
+          echo './build/graal/kubectl-java pod list'
+          ./build/graal/kubectl-java pod list
+          echo './build/graal/kubectl-java pod add test-nginx'
+          ./build/graal/kubectl-java pod add test-nginx
+          echo './build/graal/kubectl-java pod del test-nginx'
+          ./build/graal/kubectl-java pod del test-nginx
+          echo './build/graal/kubectl-java pod delete non-existent'
+          ./build/graal/kubectl-java pod delete non-existent
+          echo './build/graal/kubectl-java resources'
+          ./build/graal/kubectl-java resources

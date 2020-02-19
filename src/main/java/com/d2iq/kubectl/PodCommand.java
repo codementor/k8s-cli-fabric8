@@ -4,11 +4,11 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
         name = "pod",
-        description = "Programmatically accesses pods in a k8s with 'add', 'list' and 'list2'",
+        description = "Programmatically accesses pods in a k8s with 'add', 'delete' and 'list'",
         subcommands = {
-                PodAddCommand.class,
-                PodListCommand.class,
-                PodList2Command.class
+            PodAddCommand.class,
+            PodDeleteCommand.class,
+            PodListCommand.class
         }
 )
 public class PodCommand {

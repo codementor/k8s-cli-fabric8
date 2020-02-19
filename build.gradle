@@ -7,7 +7,7 @@ plugins {
 
 graal {
     mainClass 'com.d2iq.kubectl.Main'
-    outputName 'kubectl-example'
+    outputName 'kubectl-java'
     graalVersion '19.2.1'
 }
 
@@ -19,12 +19,15 @@ repositories {
 
 dependencies {
     // client-java for k8s
-    compile 'io.kubernetes:client-java:5.0.0'
+    compile 'io.fabric8:kubernetes-client:4.8.0'
 
     // pico for cli
     compile 'info.picocli:picocli:4.1.4'
 
     // text output table
     compile group: 'com.massisframework', name: 'j-text-utils', version: '0.3.4'
+
+    // remove nasty SLF4J message
+    compile 'org.slf4j:slf4j-nop:1.7.30'
 
 }
